@@ -1,0 +1,901 @@
+.sound-toggle:active {
+            transform: scale(0.9);
+        }
+
+        /* 상점/인벤토리 모달 */
+        .shop-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .shop-modal.show {
+            display: flex;
+        }
+
+        .shop-content {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: scaleIn 0.3s;
+        }
+
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .shop-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .shop-close {
+            background: #e9ecef;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .shop-close:active {
+            transform: scale(0.9);
+        }
+
+        .shop-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .shop-tab {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-ra<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>돼준이 키우기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.95);
+            position: relative;
+        }
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8787);
+            padding: 20px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .money-display {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 돼준이 표시 영역 */
+        .daejun-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .daejun-display {
+            font-size: 120px;
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .daejun-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .level-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-count {
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* 강화 확률 표시 */
+        .probability-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .prob-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .prob-success { color: #51cf66; font-weight: bold; }
+        .prob-fail { color: #ffa94d; }
+        .prob-destroy { color: #ff6b6b; }
+
+        /* 버튼 영역 */
+        .button-area {
+            padding: 20px;
+            background: white;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.05);
+        }
+
+        .upgrade-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-bottom: 10px;
+        }
+
+        .upgrade-btn:active {
+            transform: scale(0.95);
+        }
+
+        .upgrade-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .cost-display {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 결과 모달 */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .result-modal.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 80%;
+            animation: scaleIn 0.3s;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.5); }
+            to { transform: scale(1); }
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .result-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-detail {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .result-success {
+            color: #51cf66;
+        }
+
+        .result-fail {
+            color: #ffa94d;
+        }
+
+        .result-destroy {
+            color: #ff6b6b;
+        }
+
+        .close-btn {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 파티클 효과 */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particle-rise 1s ease-out forwards;
+        }
+
+        @keyframes particle-rise {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 메뉴 버튼들 */
+        .menu-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .menu-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+            background: #e9ecef;
+        }
+
+        /* 판매 모달 */
+        .sell-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .sell-modal.show {
+            display: flex;
+        }
+
+        .sell-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 85%;
+            width: 350px;
+            animation: scaleIn 0.3s;
+        }
+
+        .sell-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .sell-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sell-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .sell-price {
+            color: #51cf66;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .sell-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sell-confirm-btn, .sell-cancel-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .sell-confirm-btn {
+            background: linear-gradient(135deg, #51cf66, #37b24d);
+            color: white;
+        }
+
+        .sell-cancel-btn {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .sell-confirm-btn:active, .sell-cancel-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sell-warning {
+            background: #fff3bf;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        /* 음소거 버튼 */
+        .sound-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sound-toggle:active {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+            <h1>🐷 돼준이 키우기</h1>
+            <div class="money-display">
+                💰 <span id="money">1000</span>원
+            </div>
+        </div>
+
+        <!-- 돼준이 표시 영역 -->
+        <div class="daejun-area">
+            <div class="daejun-display" id="daejunEmoji">🐷</div>
+            <div class="daejun-info">
+                <div class="level-display">+<span id="level">0</span> 돼준이</div>
+                <div class="upgrade-count">총 강화 횟수: <span id="upgradeCount">0</span>회</div>
+            </div>
+
+            <!-- 확률 표시 -->
+            <div class="probability-box">
+                <div class="prob-item">
+                    <span>성공 확률:</span>
+                    <span class="prob-success"><span id="successRate">100</span>%</span>
+                </div>
+                <div class="prob-item">
+                    <span>실패 확률:</span>
+                    <span class="prob-fail"><span id="failRate">0</span>%</span>
+                </div>
+                <div class="prob-item">
+                    <span>파괴 확률:</span>
+                    <span class="prob-destroy"><span id="destroyRate">0</span>%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 버튼 영역 -->
+        <div class="button-area">
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="alert('상점 기능 준비중!')">🏪 상점</button>
+                <button class="menu-btn" onclick="openSellModal()">💰 판매</button>
+                <button class="menu-btn" onclick="alert('설정 기능 준비중!')">⚙️ 설정</button>
+            </div>
+            <button class="upgrade-btn" id="upgradeBtn" onclick="upgrade()">
+                ⚔️ 강화하기!
+            </button>
+            <div class="cost-display">
+                강화 비용: <span id="cost">100</span>원
+            </div>
+        </div>
+    </div>
+
+    <!-- 결과 모달 -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <div class="result-icon" id="resultIcon">✨</div>
+            <div class="result-text" id="resultText">성공!</div>
+            <div class="result-detail" id="resultDetail">+1 돼준이가 되었습니다!</div>
+            <button class="close-btn" onclick="closeModal()">확인</button>
+        </div>
+    </div>
+
+    <!-- 판매 모달 -->
+    <div class="sell-modal" id="sellModal">
+        <div class="sell-content">
+            <div class="sell-title">🐷 돼준이 판매</div>
+            <div class="sell-warning">
+                ⚠️ 판매하면 돼준이가 +0으로 초기화됩니다!
+            </div>
+            <div class="sell-info">
+                <div class="sell-info-item">
+                    <span>현재 등급:</span>
+                    <span style="font-weight: bold; color: #667eea;">+<span id="sellLevel">0</span></span>
+                </div>
+                <div class="sell-info-item">
+                    <span>판매 가격:</span>
+                    <span class="sell-price"><span id="sellPrice">0</span>원</span>
+                </div>
+            </div>
+            <div class="sell-buttons">
+                <button class="sell-cancel-btn" onclick="closeSellModal()">취소</button>
+                <button class="sell-confirm-btn" onclick="confirmSell()">판매하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 효과음 시스템
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        let soundEnabled = true;
+
+        // 효과음 생성 함수들
+        function playSound(type) {
+            if (!soundEnabled) return;
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'success':
+                    // 성공음 (상승하는 화음)
+                    oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.4);
+                    break;
+
+                case 'fail':
+                    // 실패음 (하강음)
+                    oscillator.frequency.setValueAtTime(392.00, audioCtx.currentTime); // G4
+                    oscillator.frequency.setValueAtTime(329.63, audioCtx.currentTime + 0.15); // E4
+                    oscillator.type = 'triangle';
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+
+                case 'destroy':
+                    // 파괴음 (폭발음)
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+
+                case 'click':
+                    // 클릭음
+                    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.05);
+                    break;
+
+                case 'sell':
+                    // 판매음 (돈 소리)
+                    for (let i = 0; i < 3; i++) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.setValueAtTime(1000 + i * 200, audioCtx.currentTime + i * 0.05);
+                        osc.type = 'sine';
+                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.05 + 0.1);
+                        osc.start(audioCtx.currentTime + i * 0.05);
+                        osc.stop(audioCtx.currentTime + i * 0.05 + 0.1);
+                    }
+                    return; // 이미 여러 소리를 재생했으므로 리턴
+            }
+        }
+
+        // 음소거 토글
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔊' : '🔇';
+            playSound('click');
+        }
+        // 게임 데이터
+        let gameData = {
+            money: 1000000, //기본 1000
+            level: 0,
+            upgradeCount: 0
+        };
+
+        // 강화 확률 테이블 (레벨별)
+        const probabilityTable = {
+            0: { success: 100, fail: 0, destroy: 0 },
+            1: { success: 95, fail: 5, destroy: 0 },
+            2: { success: 90, fail: 10, destroy: 0 },
+            3: { success: 85, fail: 15, destroy: 0 },
+            4: { success: 80, fail: 18, destroy: 2 },
+            5: { success: 75, fail: 20, destroy: 5 },
+            6: { success: 70, fail: 20, destroy: 10 },
+            7: { success: 60, fail: 25, destroy: 15 },
+            8: { success: 50, fail: 25, destroy: 25 },
+            9: { success: 40, fail: 30, destroy: 30 },
+            10: { success: 30, fail: 30, destroy: 40 },
+            11: { success: 20, fail: 30, destroy: 50 },
+            12: { success: 15, fail: 25, destroy: 60 },
+            13: { success: 10, fail: 20, destroy: 70 },
+            14: { success: 5, fail: 15, destroy: 80 },
+            15: { success: 3, fail: 12, destroy: 85 }
+        };
+
+        // 강화 비용 계산
+        function getCost(level) {
+            return 100 * Math.pow(1.5, level);
+        }
+
+        // 판매 가격 계산 (등급이 높을수록 기하급수적으로 비쌈)
+        function getSellPrice(level) {
+            if (level === 0) return 0;
+            
+            // 기본 공식: 500 * (2^level) * level
+            // 추가 보너스: 10레벨 이상은 추가 배율
+            let basePrice = 100 * Math.pow(2, level) * level;
+            
+            if (level >= 15) {
+                basePrice *= 2.5; // 15레벨 이상 2.5배
+            } else if (level >= 12) {
+                basePrice *= 2; // 12레벨 이상 2배
+            } else if (level >= 10) {
+                basePrice *= 1.5; // 10레벨 이상 1.5배
+            }
+            
+            return Math.floor(basePrice);
+        }
+
+        // 확률 가져오기
+        function getProbability(level) {
+            if (level > 15) {
+                return { success: 1, fail: 9, destroy: 90 };
+            }
+            return probabilityTable[level] || probabilityTable[15];
+        }
+
+        // UI 업데이트
+        function updateUI() {
+            document.getElementById('money').textContent = Math.floor(gameData.money);
+            document.getElementById('level').textContent = gameData.level;
+            document.getElementById('upgradeCount').textContent = gameData.upgradeCount;
+            
+            const cost = getCost(gameData.level);
+            document.getElementById('cost').textContent = Math.floor(cost);
+            
+            const prob = getProbability(gameData.level);
+            document.getElementById('successRate').textContent = prob.success;
+            document.getElementById('failRate').textContent = prob.fail;
+            document.getElementById('destroyRate').textContent = prob.destroy;
+
+            // 돈 부족시 버튼 비활성화
+            const btn = document.getElementById('upgradeBtn');
+            if (gameData.money < cost) {
+                btn.disabled = true;
+                btn.textContent = '💸 돈이 부족해요!';
+            } else {
+                btn.disabled = false;
+                btn.textContent = '⚔️ 강화하기!';
+            }
+
+            // 레벨에 따른 이모지 변경
+            updateDaejunEmoji();
+        }
+
+        // 돼준이 이모지 업데이트
+        function updateDaejunEmoji() {
+            const level = gameData.level;
+            let emoji = '🐷';
+            
+            if (level >= 15) emoji = '👑🐷✨';
+            else if (level >= 12) emoji = '💎🐷';
+            else if (level >= 10) emoji = '⭐🐷';
+            else if (level >= 7) emoji = '🌟🐷';
+            else if (level >= 5) emoji = '✨🐷';
+            else if (level >= 3) emoji = '🐷💫';
+            
+            document.getElementById('daejunEmoji').textContent = emoji;
+        }
+
+        // 파티클 생성
+        function createParticles(x, y, emoji, count) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = emoji;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                particle.style.left = (x + (Math.random() - 0.5) * 100) + 'px';
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // 강화 실행
+        function upgrade() {
+            const cost = getCost(gameData.level);
+            
+            if (gameData.money < cost) {
+                return;
+            }
+
+            // 돈 차감
+            gameData.money -= cost;
+            gameData.upgradeCount++;
+
+            // 확률 계산
+            const prob = getProbability(gameData.level);
+            const rand = Math.random() * 100;
+
+            let result;
+            if (rand < prob.success) {
+                result = 'success';
+            } else if (rand < prob.success + prob.fail) {
+                result = 'fail';
+            } else {
+                result = 'destroy';
+            }
+
+            // 결과 처리
+            handleResult(result);
+        }
+
+        // 결과 처리
+        function handleResult(result) {
+            const modal = document.getElementById('resultModal');
+            const icon = document.getElementById('resultIcon');
+            const text = document.getElementById('resultText');
+            const detail = document.getElementById('resultDetail');
+
+            if (result === 'success') {
+                playSound('success');
+                gameData.level++;
+                icon.textContent = '🎉';
+                text.textContent = '강화 성공!';
+                text.className = 'result-text result-success';
+                detail.textContent = `+${gameData.level} 돼준이가 되었습니다!`;
+                
+                // 파티클 효과
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, '✨', 10);
+                
+                // 고레벨 성공시 추가 보상
+                if (gameData.level >= 10) {
+                    const bonus = getCost(gameData.level) * 2;
+                    gameData.money += bonus;
+                    detail.textContent += `\n보너스 ${Math.floor(bonus)}원 획득!`;
+                    createParticles(window.innerWidth / 2, window.innerHeight / 2, '💰', 15);
+                }
+            } else if (result === 'fail') {
+                playSound('fail');
+                icon.textContent = '😢';
+                text.textContent = '강화 실패...';
+                text.className = 'result-text result-fail';
+                detail.textContent = '레벨은 유지됩니다.';
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, '💨', 5);
+            } else {
+                playSound('destroy');
+                const oldLevel = gameData.level;
+                gameData.level = Math.max(0, gameData.level - 99999999);
+                icon.textContent = '💥';
+                text.textContent = '파괴되었습니다!';
+                text.className = 'result-text result-destroy';
+                detail.textContent = `+${oldLevel} → +${gameData.level} `;
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, '💔', 8);
+            }
+
+            // 돼준이 흔들기 효과
+            const daejun = document.getElementById('daejunEmoji');
+            daejun.style.animation = 'none';
+            setTimeout(() => {
+                daejun.style.animation = 'float 3s ease-in-out infinite';
+            }, 10);
+
+            updateUI();
+            modal.classList.add('show');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            playSound('click');
+            document.getElementById('resultModal').classList.remove('show');
+        }
+
+        // 판매 모달 열기
+        function openSellModal() {
+            playSound('click');
+            
+            if (gameData.level === 0) {
+                alert('판매할 돼준이가 없습니다! (레벨 0)');
+                return;
+            }
+            
+            document.getElementById('sellLevel').textContent = gameData.level;
+            document.getElementById('sellPrice').textContent = getSellPrice(gameData.level).toLocaleString();
+            document.getElementById('sellModal').classList.add('show');
+        }
+
+        // 판매 모달 닫기
+        function closeSellModal() {
+            playSound('click');
+            document.getElementById('sellModal').classList.remove('show');
+        }
+
+        // 판매 확정
+        function confirmSell() {
+            playSound('sell');
+            
+            const sellPrice = getSellPrice(gameData.level);
+            gameData.money += sellPrice;
+            
+            // 파티클 효과
+            createParticles(window.innerWidth / 2, window.innerHeight / 2, '💰', 20);
+            createParticles(window.innerWidth / 2, window.innerHeight / 2, '✨', 15);
+            
+            // 레벨 초기화
+            gameData.level = 0;
+            
+            updateUI();
+            closeSellModal();
+            
+            // 판매 완료 알림
+            setTimeout(() => {
+                const modal = document.getElementById('resultModal');
+                const icon = document.getElementById('resultIcon');
+                const text = document.getElementById('resultText');
+                const detail = document.getElementById('resultDetail');
+                
+                icon.textContent = '💰';
+                text.textContent = '판매 완료!';
+                text.className = 'result-text result-success';
+                detail.textContent = `${sellPrice.toLocaleString()}원을 획득했습니다!`;
+                modal.classList.add('show');
+            }, 300);
+        }
+
+        // 초기화
+        updateUI();
+
+        // 자동 저장 (5초마다)
+        setInterval(() => {
+            console.log('게임 자동 저장됨');
+        }, 5000);
+    </script>
+</body>
+</html>
